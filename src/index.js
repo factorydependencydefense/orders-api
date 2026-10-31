@@ -1,4 +1,5 @@
 import express from 'express';
+import { requireOrderToken } from './auth.js';
 import { normalizeOrder, orderTotal, publicOrderView, summarizeByStatus } from './orders.js';
 
 export function createApp() {
@@ -7,10 +8,14 @@ export function createApp() {
 
   app.use(express.json());
 
-  app.post('/orders', (req, res) => {
+  app.post('/orders', requireOrderToken, (req, res) => {
     const order = normalizeOrder({ id: `ord_${orders.length + 1}`, ...req.body });
     orders.push(order);
-    res.status(201).json({ order: publicOrderView(order), total: orderTotal(order) });
+    res.status(201).json({
+      order: publicOrderView(order),
+      total: orderTotal(order),
+      actor: req.user.sub,
+    });
   });
 
   app.get('/orders/summary', (_req, res) => {

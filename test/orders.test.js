@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { createApp } from '../src/index.js';
 import { normalizeOrder, orderTotal, publicOrderView, summarizeByStatus } from '../src/orders.js';
@@ -33,10 +34,18 @@ test('publicOrderView hides internal fields', () => {
 });
 
 test('POST /orders returns the created order and total', async () => {
-  const res = await request(createApp())
-    .post('/orders')
-    .send({ lines: [{ qty: 3, unitPrice: 2 }] })
-    .expect(201);
-  assert.equal(res.body.total, 6);
-  assert.equal(res.body.order.currency, 'USD');
+  const previous = process.env.ORDERS_JWT_SECRET;
+  process.env.ORDERS_JWT_SECRET = 'orders-test-secret';
+  try {
+    const res = await request(createApp())
+      .post('/orders')
+      .set('Authorization', `Bearer ${jwt.sign({ sub: 'u1' }, 'orders-test-secret', { algorithm: 'HS256' })}`)
+      .send({ lines: [{ qty: 3, unitPrice: 2 }] })
+      .expect(201);
+    assert.equal(res.body.total, 6);
+    assert.equal(res.body.order.currency, 'USD');
+  } finally {
+    if (previous === undefined) delete process.env.ORDERS_JWT_SECRET;
+    else process.env.ORDERS_JWT_SECRET = previous;
+  }
 });
