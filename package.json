@@ -1,0 +1,26 @@
+{
+  "name": "orders-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Order intake and pricing API.",
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "src/index.js",
+  "scripts": {
+    "build": "esbuild src/index.js --bundle --platform=node --packages=external --outfile=dist/index.js",
+    "test": "node --test \"test/**/*.test.js\"",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "express": "5.3.0",
+    "lodash": "4.17.10",
+    "moment": "2.31.0",
+    "request": "2.88.2"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "supertest": "7.1.4"
+  }
+}
