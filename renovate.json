@@ -1,0 +1,16 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": [
+    "New releases are held for 7 days so a compromised or yanked publish is caught before it reaches this repo. internalChecksFilter strict makes the age check hold the pull request back instead of only reporting it.",
+    "Emergency bypass for a human: merge the pinned version by hand, or temporarily lower minimumReleaseAge in this file on a reviewed pull request that @MikeBrouwers approves. Security fixes need no bypass, vulnerabilityAlerts sets minimumReleaseAge to null so they are never delayed."
+  ],
+  "extends": [
+    "config:recommended"
+  ],
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "minimumReleaseAge": null
+  }
+}
