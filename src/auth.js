@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 
+const ORDERS_JWT_ALGORITHMS = ['HS256'];
+
 export function ordersJwtSecret() {
   return process.env.ORDERS_JWT_SECRET ?? '';
 }
@@ -12,7 +14,8 @@ export function bearerToken(authorization) {
 }
 
 export function verifyOrderToken(token, secret = ordersJwtSecret()) {
-  return jwt.verify(token, secret);
+  if (!secret) throw new jwt.JsonWebTokenError('ORDERS_JWT_SECRET is not configured');
+  return jwt.verify(token, secret, { algorithms: ORDERS_JWT_ALGORITHMS });
 }
 
 export function requireOrderToken(req, res, next) {
