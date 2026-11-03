@@ -12,7 +12,7 @@ export function bearerToken(authorization) {
 }
 
 export function verifyOrderToken(token, secret = ordersJwtSecret()) {
-  return jwt.verify(token, secret);
+  return jwt.verify(token, secret, { algorithms: ['HS256'] });
 }
 
 export function requireOrderToken(req, res, next) {
