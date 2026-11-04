@@ -11,8 +11,10 @@ export function bearerToken(authorization) {
   return value;
 }
 
+export const ORDERS_JWT_ALGORITHMS = ['HS256'];
+
 export function verifyOrderToken(token, secret = ordersJwtSecret()) {
-  return jwt.verify(token, secret);
+  return jwt.verify(token, secret, { algorithms: ORDERS_JWT_ALGORITHMS });
 }
 
 export function requireOrderToken(req, res, next) {

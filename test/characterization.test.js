@@ -1,6 +1,7 @@
-// These assertions pin today's vulnerable behaviour and are expected to be inverted by the remediation PR.
+// These assertions pin the behaviour of the alg:none forgery shape that jsonwebtoken 8.5.1 accepted.
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { verifyOrderToken } from '../src/auth.js';
 import { createApp } from '../src/index.js';
@@ -20,19 +21,22 @@ async function withoutSecret(fn) {
   }
 }
 
-test('vulnerable today: an alg:none token is accepted when ORDERS_JWT_SECRET is unset', async () => {
-  const claims = await withoutSecret(() => verifyOrderToken(algNoneToken({ sub: 'attacker', role: 'admin' })));
-  assert.equal(claims.sub, 'attacker');
-  assert.equal(claims.role, 'admin');
+test('secure now: an alg:none token is rejected when ORDERS_JWT_SECRET is unset', async () => {
+  await withoutSecret(() => {
+    assert.throws(
+      () => verifyOrderToken(algNoneToken({ sub: 'attacker', role: 'admin' })),
+      jwt.JsonWebTokenError,
+    );
+  });
 });
 
-test('vulnerable today: POST /orders accepts a forged alg:none bearer token when ORDERS_JWT_SECRET is unset', async () => {
+test('secure now: POST /orders rejects a forged alg:none bearer token when ORDERS_JWT_SECRET is unset', async () => {
   await withoutSecret(async () => {
     const res = await request(createApp())
       .post('/orders')
       .set('Authorization', `Bearer ${algNoneToken({ sub: 'attacker' })}`)
       .send({ lines: [{ qty: 1, unitPrice: 9 }] })
-      .expect(201);
-    assert.equal(res.body.actor, 'attacker');
+      .expect(401);
+    assert.equal(res.body.error, 'invalid token');
   });
 });
